@@ -51,4 +51,5 @@ end
 function Activate()
 	GameRules.GameMode = GameMode()
 	GameRules.GameMode:InitGameMode()
+	GameRules.GameMode:OnGameInProgress()
 end

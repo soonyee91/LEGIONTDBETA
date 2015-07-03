@@ -280,10 +280,20 @@ end
 function GameMode:OnGameInProgress()
 	print("[LEGION_TD] The game has officially begun")
 
-	Timers:CreateTimer(30, function() -- Start this timer 30 game-time seconds later
-		--print("This function is called 30 seconds after the game begins, and every 30 seconds thereafter")
-		return 30.0 -- Rerun this timer every 30 game-time seconds
-	end)
+	
+
+	local repeat_interval = 30 -- Rerun this timer every *repeat_interval* game-time seconds
+    local start_after = 30 -- Start this timer *start_after* game-time seconds later
+
+    Timers:CreateTimer(start_after, function()
+        SpawnCreeps()
+        return repeat_interval
+    end)
+end
+
+function SpawnCreeps()
+    local point = Entities:FindByName( nil, "spawn1"):GetAbsOrigin()
+    local unit = CreateUnitByName("npc_bh_dummy", point, true, nil, nil, DOTA_TEAM_NEUTRALS)
 end
 
 -- Cleanup a player when they leave
@@ -340,7 +350,8 @@ function GameMode:OnNPCSpawned(keys)
 		elseif npc:GetUnitName() == "npc_dota_neutral_kobold" then
 			Timers:CreateTimer(1.0, function()
 				npc:ForceKill(true)
-			end
+
+			end)
 	end
 end
 
