@@ -280,8 +280,6 @@ end
 function GameMode:OnGameInProgress()
 	print("[LEGION_TD] The game has officially begun")
 
-	
-
 	local repeat_interval = 30 -- Rerun this timer every *repeat_interval* game-time seconds
     local start_after = 30 -- Start this timer *start_after* game-time seconds later
 
@@ -289,11 +287,6 @@ function GameMode:OnGameInProgress()
         SpawnCreeps()
         return repeat_interval
     end)
-end
-
-function SpawnCreeps()
-    local point = Entities:FindByName( nil, "spawn1"):GetAbsOrigin()
-    local unit = CreateUnitByName("npc_bh_dummy", point, true, nil, nil, DOTA_TEAM_NEUTRALS)
 end
 
 -- Cleanup a player when they leave
@@ -350,7 +343,6 @@ function GameMode:OnNPCSpawned(keys)
 		elseif npc:GetUnitName() == "npc_dota_neutral_kobold" then
 			Timers:CreateTimer(1.0, function()
 				npc:ForceKill(true)
-
 			end)
 	end
 end
@@ -527,4 +519,21 @@ function GameMode:OnEntityKilled( keys )
 	end
 
 	-- Put code here to handle when an entity gets killed
+end
+
+--[[ 
+=============================================================================
+	OUR CODES STARTS FROM HERE
+=============================================================================
+]]
+
+function SpawnCreeps()
+    local point = Entities:FindByName( nil, "spawn1"):GetAbsOrigin()
+    local units_to_spawn = 10;
+
+    for i = 1, units_to_spawn do
+    	Timers:CreateTimer(function()
+    		local unit = CreateUnitByName("npc_bh_dummy", point, true, nil, nil, DOTA_TEAM_NEUTRALS)
+    	end)
+    end
 end
