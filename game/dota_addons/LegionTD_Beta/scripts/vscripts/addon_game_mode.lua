@@ -141,9 +141,9 @@ end
 
 -- Create the game mode when we activate
 function Activate()
-	--GameRules.GameMode = GameMode()
-	--GameRules.GameMode:InitGameMode()
+	GameRules.GameMode = GameMode()
+	GameRules.GameMode:InitGameMode()
 	--GameRules.GameMode:OnGameInProgress()
-	GameRules.SampleRTS = SampleRTS()
-	GameRules.SampleRTS:InitSampleRTS()
+	--GameRules.SampleRTS = SampleRTS()
+	--GameRules.SampleRTS:InitSampleRTS()
 end

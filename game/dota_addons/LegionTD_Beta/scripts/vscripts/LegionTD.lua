@@ -43,9 +43,6 @@ USE_CUSTOM_HERO_LEVELS = true           -- Should we allow heroes to have custom
 MAX_LEVEL = 50                          -- What level should we let heroes get to?
 USE_CUSTOM_XP_VALUES = true             -- Should we use custom XP values to level up heroes, or the default Dota numbers?
 
-Wave_Difficulty_Level = 1
-EnemiesRemaining = {}
-
 -- Fill this table up with the required XP per level if you want to change it
 XP_PER_LEVEL_TABLE = {}
 for i=1,MAX_LEVEL do
@@ -127,9 +124,6 @@ function GameMode:InitGameMode()
 
 	self.bSeenWaitForPlayers = false
 
-	-- Commands can be registered for debugging purposes or as functions that can be called by the custom Scaleform UI
-	Convars:RegisterCommand( "command_example", Dynamic_Wrap(dotacraft, 'ExampleConsoleCommand'), "A console command example", 0 )
-
 	print('[LEGION_TD] Done loading legionTD gamemode!\n\n')
 end
 
@@ -200,20 +194,6 @@ function GameMode:CaptureGameMode()
 	end
 end
 
--- This is an example console command
-function GameMode:ExampleConsoleCommand()
-	print( '******* Example Console Command ***************' )
-	local cmdPlayer = Convars:GetCommandClient()
-	if cmdPlayer then
-		local playerID = cmdPlayer:GetPlayerID()
-		if playerID ~= nil and playerID ~= -1 then
-			-- Do something here for the player who called this command
-			PlayerResource:ReplaceHeroWith(playerID, "npc_dota_hero_viper", 1000, 1000)
-		end
-	end
-	print( '*********************************************' )
-end
-
 --[[
   This function should be used to set up Async precache calls at the beginning of the game.  The Precache() function 
   in addon_game_mode.lua used to and may still sometimes have issues with client's appropriately precaching stuff.
@@ -248,6 +228,9 @@ end
 ]]
 function GameMode:OnAllPlayersLoaded()
 	print("[LEGION_TD] All Players have loaded into the game")
+
+	iRadiantHeroCount = PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_GOODGUYS)
+	iDireHeroCount = PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_BADGUYS)
 end
 
 --[[
@@ -267,47 +250,18 @@ function GameMode:OnHeroInGame(hero)
 	-- Store this hero handle in this table.
 	table.insert(self.vPlayers, hero)
 
+	local iTotalPlayers = iRadiantHeroCount + iDireHeroCount
+	if #self.vPlayers == iTotalPlayers then
+		print('[SC] Game OFFICIALLY start right now')
+		bGameStarted = true
+	end
+
 	-- This line for example will set the starting gold of every hero to 500 unreliable gold
 	hero:SetGold(500, false)
 
 	-- These lines will create an item and add it to the player, effectively ensuring they start with the item
-	local item = CreateItem("item_example_item", hero, hero)
-	hero:AddItem(item)
-end
-
---[[
-	This function is called once and only once when the game completely begins (about 0:00 on the clock).  At this point,
-	gold will begin to go up in ticks if configured, creeps will spawn, towers will become damageable etc.  This function
-	is useful for starting any game logic timers/thinkers, beginning the first round, etc.
-]]
-function GameMode:OnGameInProgress()
-	print("[LEGION_TD] The game has officially begun")
-	FireGameEvent('cgm_timer_display', { timerMsg = "Game starts in", timerSeconds = 30, timerWarning = -1, timerEnd = false, timerPosition = 0})
-
-	local repeat_interval = 30 -- Rerun this timer every *repeat_interval* game-time seconds
-    local start_after = 30 -- Start this timer *start_after* game-time seconds later
-    local check_interval = 1
-
-    Timers:CreateTimer(start_after, function()
-    	--[[
-    	if GameMode:IsRoundEnded() == true
-    		print ('[LEGION_TD] Round Ended')
-	        Wave_Difficulty_Level = Wave_Difficulty_Level + 1
-    		return
-    	end
-		]]
-		SpawnCreeps()
-        --SpawnCreeps(Wave_Difficulty_Level)
-        return repeat_interval
-    end)
-
-    --[[
-    Timers:CreateTimer(start_after, function()
-    	CheckRoundEnd()
-    	return check_interval
-    end)
-	]]
-
+	--local item = CreateItem("item_example_item", hero, hero)
+	--hero:AddItem(item)
 end
 
 -- Cleanup a player when they leave
@@ -540,64 +494,110 @@ function GameMode:OnEntityKilled( keys )
 	end
 
 	-- Put code here to handle when an entity gets killed
-	--[[
-	for i, unit in pairs( EnemiesRemaining ) do
+	for i, unit in pairs( vEnemiesRemaining ) do
 		if killedUnit == unit then
-			print('[LEGION_TD] Killed' .. unit.GetUnitName())
-			table.remove( EnemiesRemaining, i )
+			print('[sc] Enemies Remaining : ' .. #vEnemiesRemaining)
+			table.remove( vEnemiesRemaining, i )
 			break
 		end
 	end
+	
+end
+
+--[[
+	This function is called once and only once when the game completely begins (about 0:00 on the clock).  At this vSpawnPosition,
+	gold will begin to go up in ticks if configured, creeps will spawn, towers will become damageable etc.  This function
+	is useful for starting any game logic timers/thinkers, beginning the first round, etc.
+]]
+function GameMode:OnGameInProgress()
+	print("[LEGION_TD] The game has officially begun")
+
+	local iUpdateInterval = 1
+
+	Timers:CreateTimer(function()
+		if bGameStarted == false then
+			UpdatePreGame()
+		else
+			Update()
+		end
+		return iUpdateInterval 
+	end)
+
+    --[[
+    Timers:CreateTimer(start_after, function()
+    	CheckRoundEnd()
+    	return check_interval
+    end)
 	]]
+
 end
 
 --[[ 
 =============================================================================
 	OUR CODES STARTS FROM HERE
 =============================================================================
+
+iVariable = int
+vVariable = vTables
+bVariable = boolean
+
 ]]
 
-function SpawnCreeps()
-	-- Comment by WSY: In order to spawn multiple points, I have to use this method
-	--spawn1= spawn_top_left_radiant
-	--spawn2= spawn_top_right_radiant
-	--spawn3= spawn_btm_left_radiant
-	--spawn4= spawn_btm_right_radiant
-	--spawn5= spawn_top_left_dire
-	--spawn6= spawn_top_right_dire
-	--spawn7= spawn_btm_left_dire
-	--spawn8= spawn_btm_right_dire
-	 point ={}
-	
-	for i =1 ,8 do
-		point[i]=Entities:FindByName(nil,"spawn"..i):GetAbsOrigin()
+iRadiantHeroCount = 0
+iDireHeroCount = 0
+bCalledSpawn = false
+bWaveStarted = false
+bWaveEnded = true
+bGameStarted = false
+iWaveNumber = 1
+vEnemiesRemaining = {}
+vSpawnPosition ={}
+
+
+function UpdatePreGame()
+	print('[sc] Updating PreGame..')
+
+	-- Handle radiant spawn vSpawnPositions
+	for i = 1, iRadiantHeroCount do
+		vSpawnPosition[i] = Entities:FindByName(nil, "spawn" .. i):GetAbsOrigin()
 	end
-    --point = Entities:FindByName( nil, "spawn_top_left_radiant"):GetAbsOrigin()
-    local units_to_spawn = 10;
-	unit ={}
-    for i = 1, units_to_spawn do
-    	Timers:CreateTimer(function()
-    		for i=1,8 do
-    		 unit[i] = CreateUnitByName("npc_bh_dummy", point[i], true, nil, nil, DOTA_TEAM_NEUTRALS)
-    	end
-    	end)
-    end
+
+	-- Handle dire spawn vSpawnPositions
+	for i = 5, iDireHeroCount + 4 do
+		vSpawnPosition[i] = Entities:FindByName(nil, "spawn" .. i):GetAbsOrigin()
+	end
 end
 
---[[
+function Update()
+	print('[sc] Updating.. ')
+	if bCalledSpawn == false and bWaveStarted == false and bWaveEnded == true then
+		bCalledSpawn = true
+		FireGameEvent('cgm_timer_display', { timerMsg = "Wave will start in", timerSeconds = 30, timerWarning = -1, timerEnd = false, timerPosition = 0})
+		Timers:CreateTimer(30, function()
+			SpawnCreeps(iWaveNumber)
+			bWaveStarted = true
+		end)
+	elseif IsRoundOver() == true and bWaveStarted == true then
+		bWaveStarted = false
+		bWaveEnded = true
+		bCalledSpawn = false 
+	end
+end
+
 function SpawnCreeps(waveNumber)
-    local point = Entities:FindByName( nil, "spawn1"):GetAbsOrigin()
     local units_to_spawn = 10;
 
     for i = 1, units_to_spawn do
-    	Timers:CreateTimer(function()
-    		local unit = CreateUnitByName("npc_bh_dummy" .. waveNumber, point, true, nil, nil, DOTA_TEAM_NEUTRALS)
-    		table.insert(EnemiesRemaining, unit)
-    	end)
+    	for _,v in pairs (vSpawnPosition) do
+	    	Timers:CreateTimer(function()
+	    		local unit = CreateUnitByName("npc_bh_dummy" .. waveNumber, v, true, nil, nil, DOTA_TEAM_NEUTRALS)
+	    		table.insert(vEnemiesRemaining, unit)
+    		end)
+	    end
     end
 end
 
-function GameMode:IsRoundEnded()
-	return (#EnemiesRemaining <= 0)
+function IsRoundOver()
+	return (#vEnemiesRemaining <= 0)
 end
-]]
+
