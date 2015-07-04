@@ -43,6 +43,9 @@ USE_CUSTOM_HERO_LEVELS = true           -- Should we allow heroes to have custom
 MAX_LEVEL = 50                          -- What level should we let heroes get to?
 USE_CUSTOM_XP_VALUES = true             -- Should we use custom XP values to level up heroes, or the default Dota numbers?
 
+Wave_Difficulty_Level = 1
+EnemiesRemaining = {}
+
 -- Fill this table up with the required XP per level if you want to change it
 XP_PER_LEVEL_TABLE = {}
 for i=1,MAX_LEVEL do
@@ -282,11 +285,28 @@ function GameMode:OnGameInProgress()
 
 	local repeat_interval = 30 -- Rerun this timer every *repeat_interval* game-time seconds
     local start_after = 30 -- Start this timer *start_after* game-time seconds later
+    local check_interval = 1
 
     Timers:CreateTimer(start_after, function()
-        SpawnCreeps()
+    	--[[
+    	if GameMode:IsRoundEnded() == true
+    		print ('[LEGION_TD] Round Ended')
+	        Wave_Difficulty_Level = Wave_Difficulty_Level + 1
+    		return
+    	end
+		]]
+		SpawnCreeps()
+        --SpawnCreeps(Wave_Difficulty_Level)
         return repeat_interval
     end)
+
+    --[[
+    Timers:CreateTimer(start_after, function()
+    	CheckRoundEnd()
+    	return check_interval
+    end)
+	]]
+
 end
 
 -- Cleanup a player when they leave
@@ -519,6 +539,15 @@ function GameMode:OnEntityKilled( keys )
 	end
 
 	-- Put code here to handle when an entity gets killed
+	--[[
+	for i, unit in pairs( EnemiesRemaining ) do
+		if killedUnit == unit then
+			print('[LEGION_TD] Killed' .. unit.GetUnitName())
+			table.remove( EnemiesRemaining, i )
+			break
+		end
+	end
+	]]
 end
 
 --[[ 
@@ -537,3 +566,21 @@ function SpawnCreeps()
     	end)
     end
 end
+
+--[[
+function SpawnCreeps(waveNumber)
+    local point = Entities:FindByName( nil, "spawn1"):GetAbsOrigin()
+    local units_to_spawn = 10;
+
+    for i = 1, units_to_spawn do
+    	Timers:CreateTimer(function()
+    		local unit = CreateUnitByName("npc_bh_dummy" .. waveNumber, point, true, nil, nil, DOTA_TEAM_NEUTRALS)
+    		table.insert(EnemiesRemaining, unit)
+    	end)
+    end
+end
+
+function GameMode:IsRoundEnded()
+	return (#EnemiesRemaining <= 0)
+end
+]]
