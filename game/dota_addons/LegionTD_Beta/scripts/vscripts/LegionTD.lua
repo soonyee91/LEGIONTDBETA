@@ -279,6 +279,7 @@ end
 ]]
 function GameMode:OnGameInProgress()
 	print("[LEGION_TD] The game has officially begun")
+	FireGameEvent('cgm_timer_display', { timerMsg = "Game starts in", timerSeconds = 30, timerWarning = -1, timerEnd = false, timerPosition = 0})
 
 	local repeat_interval = 30 -- Rerun this timer every *repeat_interval* game-time seconds
     local start_after = 30 -- Start this timer *start_after* game-time seconds later

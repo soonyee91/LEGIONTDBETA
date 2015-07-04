@@ -2,30 +2,11 @@
 {
     "1"
     {
-        "File"      "CustomUI"
-        "Depth"     "50"
-    }
-    "2"
-    {
-        "File"      "BuildingHelper"
-        "Depth"     "51"
-    }
-    "3"
-    {
-        "File"      "FlashUtil"
-        "Depth"     "52"
-    }
-    "4"
-    {
-        "File"      "CustomError"
-        "Depth"     "53"
-    }
-    "5"
-    {
-        "File" "StatsCollection"
-        "Depth" "1"
+        "File"      "CustomUI_Timer"
+        "Depth"     "40"
     }
 }
+
 
 // =============================================
 // Depths of base Dota UI elements
