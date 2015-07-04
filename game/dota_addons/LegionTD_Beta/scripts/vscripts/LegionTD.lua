@@ -558,12 +558,28 @@ end
 ]]
 
 function SpawnCreeps()
-    local point = Entities:FindByName( nil, "spawn1"):GetAbsOrigin()
+	-- Comment by WSY: In order to spawn multiple points, I have to use this method
+	--spawn1= spawn_top_left_radiant
+	--spawn2= spawn_top_right_radiant
+	--spawn3= spawn_btm_left_radiant
+	--spawn4= spawn_btm_right_radiant
+	--spawn5= spawn_top_left_dire
+	--spawn6= spawn_top_right_dire
+	--spawn7= spawn_btm_left_dire
+	--spawn8= spawn_btm_right_dire
+	 point ={}
+	
+	for i =1 ,8 do
+		point[i]=Entities:FindByName(nil,"spawn"..i):GetAbsOrigin()
+	end
+    --point = Entities:FindByName( nil, "spawn_top_left_radiant"):GetAbsOrigin()
     local units_to_spawn = 10;
-
+	unit ={}
     for i = 1, units_to_spawn do
     	Timers:CreateTimer(function()
-    		local unit = CreateUnitByName("npc_bh_dummy", point, true, nil, nil, DOTA_TEAM_NEUTRALS)
+    		for i=1,8 do
+    		 unit[i] = CreateUnitByName("npc_bh_dummy", point[i], true, nil, nil, DOTA_TEAM_NEUTRALS)
+    	end
     	end)
     end
 end
