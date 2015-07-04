@@ -511,7 +511,7 @@ end
 ]]
 function GameMode:OnGameInProgress()
 	print("[LEGION_TD] The game has officially begun")
-
+	
 	local iUpdateInterval = 1
 
 	Timers:CreateTimer(function()
@@ -543,20 +543,27 @@ bVariable = boolean
 
 ]]
 
+-- Radiant hero count
 iRadiantHeroCount = 0
+-- Dire hero count
 iDireHeroCount = 0
+-- Spawn of wave is called
 bCalledSpawn = false
+-- Wave began
 bWaveStarted = false
+-- Wave ended
 bWaveEnded = true
+-- Game OFFICIALY Started
 bGameStarted = false
+-- Current Wave Number
 iWaveNumber = 1
+-- Number of enemies remaining
 vEnemiesRemaining = {}
+-- Spawn Positions
 vSpawnPosition ={}
 
 
 function UpdatePreGame()
-	print('[sc] Updating PreGame..')
-
 	-- Handle radiant spawn vSpawnPositions
 	for i = 1, iRadiantHeroCount do
 		vSpawnPosition[i] = Entities:FindByName(nil, "spawn" .. i):GetAbsOrigin()
@@ -569,7 +576,6 @@ function UpdatePreGame()
 end
 
 function Update()
-	print('[sc] Updating.. ')
 	if bCalledSpawn == false and bWaveStarted == false and bWaveEnded == true then
 		bCalledSpawn = true
 		FireGameEvent('cgm_timer_display', { timerMsg = "Wave will start in", timerSeconds = 30, timerWarning = -1, timerEnd = false, timerPosition = 0})
@@ -585,6 +591,7 @@ function Update()
 end
 
 function SpawnCreeps(waveNumber)
+	print('[SC] Spawn Them Creeps')
     local units_to_spawn = 10;
 
     for i = 1, units_to_spawn do
