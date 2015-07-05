@@ -2,9 +2,15 @@
 	Basic Barebones
 ]]
 
+--[[
 -- Required files to be visible from anywhere
 require( 'timers' )
 require( 'LegionTD' )
+require( 'physics' )
+require( 'FlashUtil' )
+require( 'buildinghelper' )
+require( 'abilities' )
+]]
 
 BASE_MODULES = {
 	'util',
@@ -13,16 +19,16 @@ BASE_MODULES = {
 	'FlashUtil',
 	'lib.statcollection',
 	'abilities',
-	'samplerts',
 	'buildinghelper',
+	'LegionTD',
 }
 
 --MODULE LOADER STUFF
-BASE_LOG_PREFIX = '[SRTS]'
+BASE_LOG_PREFIX = '[LEGION_TD]'
 
 LOG_FILE = "log/SampleRTS.txt"
 
-InitLogFile(LOG_FILE, "[[ SampleRTS ]]")
+InitLogFile(LOG_FILE, "[[ LEGION_TD ]]")
 
 function log(msg)
 	print(BASE_LOG_PREFIX .. msg)
@@ -104,19 +110,10 @@ function Precache( context )
 	PrecacheUnitByNameSync("npc_dota_hero_ancient_apparition", context)
 	PrecacheUnitByNameSync("npc_dota_hero_enigma", context)
 	]]
-	print("[SAMPLERTS] Performing pre-load precache")
 
 	-- Particles can be precached individually or by folder
 	-- It it likely that precaching a single particle system will precache all of its children, but this may not be guaranteed
-	PrecacheResource("particle", "particles/econ/generic/generic_aoe_explosion_sphere_1/generic_aoe_explosion_sphere_1.vpcf", context)
-	PrecacheResource("particle_folder", "particles/test_particle", context)
 	PrecacheResource("particle_folder", "particles/buildinghelper", context)
-
-	-- Models can also be precached by folder or individually
-	-- PrecacheModel should generally used over PrecacheResource for individual models
-	PrecacheResource("model_folder", "particles/heroes/antimage", context)
-	PrecacheResource("model", "particles/heroes/viper/viper.vmdl", context)
-	PrecacheModel("models/heroes/viper/viper.vmdl", context)
 
 	-- Sounds can precached here like anything else
 	PrecacheResource("soundfile", "soundevents/game_sounds_heroes/game_sounds_gyrocopter.vsndevts", context)
@@ -124,7 +121,6 @@ function Precache( context )
 	-- Entire items can be precached by name
 	-- Abilities can also be precached in this way despite the name
 	PrecacheItemByNameSync("example_ability", context)
-	PrecacheItemByNameSync("item_example_item", context)
 
 	-- Entire heroes (sound effects/voice/models/particles) can be precached with PrecacheUnitByNameSync
 	-- Custom units from npc_units_custom.txt can also have all of their abilities and precache{} blocks precached in this way

@@ -124,6 +124,11 @@ function GameMode:InitGameMode()
 
 	self.bSeenWaitForPlayers = false
 
+	-- BH Snippet
+	-- This can be called with an optional argument: nHalfMapLength (see readme)
+	BuildingHelper:Init()
+	--BuildingHelper:BlockRectangularArea(Vector(-192,-192,0), Vector(192,192,0))
+
 	print('[LEGION_TD] Done loading legionTD gamemode!\n\n')
 end
 
@@ -133,7 +138,7 @@ mode = nil
 -- have completely connected
 function GameMode:PlayerConnect(keys)
 	print('[LEGION_TD] PlayerConnect')
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	if keys.bot == 1 then
 		-- This user is a Bot, so add it to the bots table
@@ -144,7 +149,7 @@ end
 -- This function is called once when the player fully connects and becomes "Ready" during Loading
 function GameMode:OnConnectFull(keys)
 	print ('[LEGION_TD] OnConnectFull')
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 	GameMode:CaptureGameMode()
 
 	local entIndex = keys.index+1
@@ -258,6 +263,7 @@ function GameMode:OnHeroInGame(hero)
 
 	-- This line for example will set the starting gold of every hero to 500 unreliable gold
 	hero:SetGold(500, false)
+	InitAbilities(hero)
 
 	-- These lines will create an item and add it to the player, effectively ensuring they start with the item
 	--local item = CreateItem("item_example_item", hero, hero)
@@ -267,7 +273,7 @@ end
 -- Cleanup a player when they leave
 function GameMode:OnDisconnect(keys)
 	print('[LEGION_TD] Player Disconnected ' .. tostring(keys.userid))
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local name = keys.name
 	local networkid = keys.networkid
@@ -278,7 +284,7 @@ end
 -- The overall game state has changed
 function GameMode:OnGameRulesStateChange(keys)
 	print("[LEGION_TD] GameRules State Changed")
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local newState = GameRules:State_Get()
 	if newState == DOTA_GAMERULES_STATE_WAIT_FOR_PLAYERS_TO_LOAD then
@@ -309,7 +315,7 @@ end
 -- An NPC has spawned somewhere in game.  This includes heroes
 function GameMode:OnNPCSpawned(keys)
 	print("[LEGION_TD] NPC Spawned")
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 	local npc = EntIndexToHScript(keys.entindex)
 
 	if npc:IsRealHero() and npc.bFirstSpawned == nil then
@@ -334,7 +340,7 @@ end
 -- An item was picked up off the ground
 function GameMode:OnItemPickedUp(keys)
 	print ( '[LEGION_TD] OnItemPurchased' )
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local heroEntity = EntIndexToHScript(keys.HeroEntityIndex)
 	local itemEntity = EntIndexToHScript(keys.ItemEntityIndex)
@@ -346,13 +352,13 @@ end
 -- state as necessary
 function GameMode:OnPlayerReconnect(keys)
 	print ( '[LEGION_TD] OnPlayerReconnect' )
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 end
 
 -- An item was purchased by a player
 function GameMode:OnItemPurchased( keys )
 	print ( '[LEGION_TD] OnItemPurchased' )
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	-- The playerID of the hero who is buying something
 	local plyID = keys.PlayerID
@@ -369,16 +375,30 @@ end
 -- An ability was used by a player
 function GameMode:OnAbilityUsed(keys)
 	print('[LEGION_TD] AbilityUsed')
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local player = EntIndexToHScript(keys.PlayerID)
 	local abilityname = keys.abilityname
+
+	-- BH Snippet
+
+	if player.cursorStream ~= nil then
+		if not (string.len(abilityname) > 14 and string.sub(abilityname,1,14) == "move_to_point_") then
+			if not DontCancelBuildingGhostAbils[abilityname] then
+				player:CancelGhost()
+			else
+				print(abilityname .. " did not cancel building ghost.")
+			end
+		end
+	end
+
+	-- End of BH snippet
 end
 
 -- A non-player entity (necro-book, chen creep, etc) used an ability
 function GameMode:OnNonPlayerUsedAbility(keys)
 	print('[LEGION_TD] OnNonPlayerUsedAbility')
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local abilityname=  keys.abilityname
 end
@@ -386,7 +406,7 @@ end
 -- A player changed their name
 function GameMode:OnPlayerChangedName(keys)
 	print('[LEGION_TD] OnPlayerChangedName')
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local newName = keys.newname
 	local oldName = keys.oldName
@@ -395,7 +415,7 @@ end
 -- A player leveled up an ability
 function GameMode:OnPlayerLearnedAbility( keys)
 	print ('[LEGION_TD] OnPlayerLearnedAbility')
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local player = EntIndexToHScript(keys.player)
 	local abilityname = keys.abilityname
@@ -404,7 +424,7 @@ end
 -- A channelled ability finished by either completing or being interrupted
 function GameMode:OnAbilityChannelFinished(keys)
 	print ('[LEGION_TD] OnAbilityChannelFinished')
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local abilityname = keys.abilityname
 	local interrupted = keys.interrupted == 1
@@ -413,7 +433,7 @@ end
 -- A player leveled up
 function GameMode:OnPlayerLevelUp(keys)
 	print ('[LEGION_TD] OnPlayerLevelUp')
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local player = EntIndexToHScript(keys.player)
 	local level = keys.level
@@ -422,7 +442,7 @@ end
 -- A player last hit a creep, a tower, or a hero
 function GameMode:OnLastHit(keys)
 	print ('[LEGION_TD] OnLastHit')
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local isFirstBlood = keys.FirstBlood == 1
 	local isHeroKill = keys.HeroKill == 1
@@ -433,7 +453,7 @@ end
 -- A tree was cut down by tango, quelling blade, etc
 function GameMode:OnTreeCut(keys)
 	print ('[LEGION_TD] OnTreeCut')
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local treeX = keys.tree_x
 	local treeY = keys.tree_y
@@ -442,7 +462,7 @@ end
 -- A rune was activated by a player
 function GameMode:OnRuneActivated (keys)
 	print ('[LEGION_TD] OnRuneActivated')
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local player = PlayerResource:GetPlayer(keys.PlayerID)
 	local rune = keys.rune
@@ -452,7 +472,7 @@ end
 -- A player took damage from a tower
 function GameMode:OnPlayerTakeTowerDamage(keys)
 	print ('[LEGION_TD] OnPlayerTakeTowerDamage')
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local player = PlayerResource:GetPlayer(keys.PlayerID)
 	local damage = keys.damage
@@ -461,7 +481,7 @@ end
 -- A player picked a hero
 function GameMode:OnPlayerPickHero(keys)
 	print ('[LEGION_TD] OnPlayerPickHero')
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local heroClass = keys.hero
 	local heroEntity = EntIndexToHScript(keys.heroindex)
@@ -471,7 +491,7 @@ end
 -- A player killed another player in a multi-team context
 function GameMode:OnTeamKillCredit(keys)
 	print ('[LEGION_TD] OnTeamKillCredit')
-	DeepPrintTable(keys)
+	--DeepPrintTable(keys)
 
 	local killerPlayer = PlayerResource:GetPlayer(keys.killer_userid)
 	local victimPlayer = PlayerResource:GetPlayer(keys.victim_userid)
@@ -482,7 +502,7 @@ end
 -- An entity died
 function GameMode:OnEntityKilled( keys )
 	print( '[LEGION_TD] OnEntityKilled Called' )
-	DeepPrintTable( keys )
+	--DeepPrintTable( keys )
 
 	-- The Unit that was Killed
 	local killedUnit = EntIndexToHScript( keys.entindex_killed )
@@ -494,6 +514,13 @@ function GameMode:OnEntityKilled( keys )
 	end
 
 	-- Put code here to handle when an entity gets killed
+
+	-- START OF BH SNIPPET
+	if BuildingHelper:IsBuilding(killedUnit) then
+		killedUnit:RemoveBuilding(false)
+	end
+	-- END OF BH SNIPPET
+
 	for i, unit in pairs( vEnemiesRemaining ) do
 		if killedUnit == unit then
 			print('[sc] Enemies Remaining : ' .. #vEnemiesRemaining)
@@ -597,7 +624,7 @@ function SpawnCreeps(waveNumber)
     for i = 1, units_to_spawn do
     	for _,v in pairs (vSpawnPosition) do
 	    	Timers:CreateTimer(function()
-	    		local unit = CreateUnitByName("npc_bh_dummy" .. waveNumber, v, true, nil, nil, DOTA_TEAM_NEUTRALS)
+	    		local unit = CreateUnitByName("creep_wave_" .. waveNumber, v, true, nil, nil, DOTA_TEAM_NEUTRALS)
 	    		table.insert(vEnemiesRemaining, unit)
     		end)
 	    end
