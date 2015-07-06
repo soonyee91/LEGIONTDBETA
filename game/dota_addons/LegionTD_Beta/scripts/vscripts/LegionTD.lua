@@ -233,9 +233,6 @@ end
 ]]
 function GameMode:OnAllPlayersLoaded()
 	print("[LEGION_TD] All Players have loaded into the game")
-
-	iRadiantHeroCount = PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_GOODGUYS)
-	iDireHeroCount = PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_BADGUYS)
 end
 
 --[[
@@ -254,12 +251,6 @@ function GameMode:OnHeroInGame(hero)
 	hero.playerName = PlayerResource:GetPlayerName(hero:GetPlayerID())
 	-- Store this hero handle in this table.
 	table.insert(self.vPlayers, hero)
-
-	local iTotalPlayers = iRadiantHeroCount + iDireHeroCount
-	if #self.vPlayers == iTotalPlayers then
-		print('[SC] Game OFFICIALLY start right now')
-		bGameStarted = true
-	end
 
 	-- This line for example will set the starting gold of every hero to 500 unreliable gold
 	hero:SetGold(500, false)
@@ -541,12 +532,9 @@ function GameMode:OnGameInProgress()
 	
 	local iUpdateInterval = 1
 
+	UpdatePreGame()
 	Timers:CreateTimer(function()
-		if bGameStarted == false then
-			UpdatePreGame()
-		else
-			Update()
-		end
+		Update()
 		return iUpdateInterval 
 	end)
 
@@ -592,6 +580,11 @@ vSpawnPosition ={}
 
 function UpdatePreGame()
 	-- Handle radiant spawn vSpawnPositions
+	iRadiantHeroCount = PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_GOODGUYS)
+	iDireHeroCount = PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_BADGUYS)
+
+	print('[sc] Radiant Players: ' .. iRadiantHeroCount .. ' Dire Players: ' .. iDireHeroCount)
+
 	for i = 1, iRadiantHeroCount do
 		vSpawnPosition[i] = Entities:FindByName(nil, "spawn" .. i):GetAbsOrigin()
 	end
@@ -607,6 +600,7 @@ function Update()
 		bCalledSpawn = true
 		FireGameEvent('cgm_timer_display', { timerMsg = "Wave will start in", timerSeconds = 30, timerWarning = -1, timerEnd = false, timerPosition = 0})
 		Timers:CreateTimer(30, function()
+			ConvertToHeros()
 			SpawnCreeps(iWaveNumber)
 			bWaveStarted = true
 		end)
@@ -635,3 +629,6 @@ function IsRoundOver()
 	return (#vEnemiesRemaining <= 0)
 end
 
+function ConvertToHeros()
+
+end

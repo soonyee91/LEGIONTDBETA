@@ -58,6 +58,7 @@
 
 		"VisionNighttimeRange"		"1800"									// Range of vision at night time.
 	}
+	
 	"dark_tower"
 	{
 		"AbilityLayout" 		"6"
