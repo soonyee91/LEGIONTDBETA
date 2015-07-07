@@ -312,10 +312,6 @@ function GameMode:OnNPCSpawned(keys)
 	if npc:IsRealHero() and npc.bFirstSpawned == nil then
 		npc.bFirstSpawned = true
 		GameMode:OnHeroInGame(npc)
-		elseif npc:GetUnitName() == "npc_dota_neutral_kobold" then
-			Timers:CreateTimer(1.0, function()
-				npc:ForceKill(true)
-			end)
 	end
 end
 
@@ -512,10 +508,10 @@ function GameMode:OnEntityKilled( keys )
 	end
 	-- END OF BH SNIPPET
 
-	for i, unit in pairs( vEnemiesRemaining ) do
+	for i, unit in pairs( tEnemiesRemaining ) do
 		if killedUnit == unit then
-			print('[sc] Enemies Remaining : ' .. #vEnemiesRemaining)
-			table.remove( vEnemiesRemaining, i )
+			print('[sc] Enemies Remaining : ' .. #tEnemiesRemaining)
+			table.remove( tEnemiesRemaining, i )
 			break
 		end
 	end
@@ -523,7 +519,7 @@ function GameMode:OnEntityKilled( keys )
 end
 
 --[[
-	This function is called once and only once when the game completely begins (about 0:00 on the clock).  At this vSpawnPosition,
+	This function is called once and only once when the game completely begins (about 0:00 on the clock).  At this tSpawnPosition,
 	gold will begin to go up in ticks if configured, creeps will spawn, towers will become damageable etc.  This function
 	is useful for starting any game logic timers/thinkers, beginning the first round, etc.
 ]]
@@ -553,8 +549,9 @@ end
 =============================================================================
 
 iVariable = int
-vVariable = vTables
+tVariable = Tables
 bVariable = boolean
+vVariable = Vector
 
 ]]
 
@@ -573,26 +570,35 @@ bGameStarted = false
 -- Current Wave Number
 iWaveNumber = 1
 -- Number of enemies remaining
-vEnemiesRemaining = {}
+tEnemiesRemaining = {}
 -- Spawn Positions
-vSpawnPosition ={}
+tSpawnPosition ={}
+-- Pool position
+vPoolPos = 0
+-- table of summons
+tSummonedTower = {}
+-- Summoned Tower Position
+tSummonedTowerPos = {}
 
 
 function UpdatePreGame()
-	-- Handle radiant spawn vSpawnPositions
+	-- Handle radiant spawn tSpawnPositions
 	iRadiantHeroCount = PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_GOODGUYS)
 	iDireHeroCount = PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_BADGUYS)
 
 	print('[sc] Radiant Players: ' .. iRadiantHeroCount .. ' Dire Players: ' .. iDireHeroCount)
 
 	for i = 1, iRadiantHeroCount do
-		vSpawnPosition[i] = Entities:FindByName(nil, "spawn" .. i):GetAbsOrigin()
+		tSpawnPosition[i] = Entities:FindByName(nil, "spawn" .. i):GetAbsOrigin()
 	end
 
-	-- Handle dire spawn vSpawnPositions
+	-- Handle dire spawn tSpawnPositions
 	for i = 5, iDireHeroCount + 4 do
-		vSpawnPosition[i] = Entities:FindByName(nil, "spawn" .. i):GetAbsOrigin()
+		tSpawnPosition[i] = Entities:FindByName(nil, "spawn" .. i):GetAbsOrigin()
 	end
+
+	vPoolPos = Entities:FindByName(nil, "Pool_Pos"):GetAbsOrigin() 
+	--print('vPoolPos: ' .. vPoolPos) 
 end
 
 function Update()
@@ -608,6 +614,7 @@ function Update()
 		bWaveStarted = false
 		bWaveEnded = true
 		bCalledSpawn = false 
+		RespawnBuildings()
 	end
 end
 
@@ -616,19 +623,28 @@ function SpawnCreeps(waveNumber)
     local units_to_spawn = 10;
 
     for i = 1, units_to_spawn do
-    	for _,v in pairs (vSpawnPosition) do
+    	for _,v in pairs (tSpawnPosition) do
 	    	Timers:CreateTimer(function()
 	    		local unit = CreateUnitByName("creep_wave_" .. waveNumber, v, true, nil, nil, DOTA_TEAM_NEUTRALS)
-	    		table.insert(vEnemiesRemaining, unit)
+	    		table.insert(tEnemiesRemaining, unit)
     		end)
 	    end
     end
 end
 
 function IsRoundOver()
-	return (#vEnemiesRemaining <= 0)
+	return (#tEnemiesRemaining <= 0)
 end
 
 function ConvertToHeros()
+	for _,v in pairs (tSummonedTower) do
+		-- TODO: Call first skill to change to unit
+		v:SetAbsOrigin(vPoolPos)
+	end
+end
 
+function RespawnBuildings()
+	for k,v in pairs (tSummonedTowerPos) do
+		k:SetAbsOrigin(v)
+	end
 end

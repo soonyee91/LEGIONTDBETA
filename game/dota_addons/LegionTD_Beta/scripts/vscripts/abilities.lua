@@ -28,6 +28,11 @@ function build( keys )
 		if Debug_BH then
 			print("Completed construction of " .. unit:GetUnitName())
 		end
+
+		print('Got to here')
+		table.insert(tSummonedTower, unit)
+		tSummonedTowerPos[unit] = unit:GetAbsOrigin()
+
 		-- Play construction complete sound.
 		-- Give building its abilities
 		-- add the mana
