@@ -62,6 +62,8 @@ function GameMode:InitGameMode()
 	print('[LEGION_TD] Starting to load legionTD gamemode...')
 
 	-- Setup rules
+	GameRules:SetCustomGameTeamMaxPlayers(DOTA_TEAM_GOODGUYS,4)
+	GameRules:SetCustomGameTeamMaxPlayers(DOTA_TEAM_BADGUYS,4)
 	GameRules:SetHeroRespawnEnabled( ENABLE_HERO_RESPAWN )
 	GameRules:SetUseUniversalShopMode( UNIVERSAL_SHOP_MODE )
 	GameRules:SetSameHeroSelectionEnabled( ALLOW_SAME_HERO_SELECTION )
