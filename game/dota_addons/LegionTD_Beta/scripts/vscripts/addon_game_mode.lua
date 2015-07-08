@@ -84,6 +84,16 @@ function Precache( context )
 	]]
 
 	print("[LEGION_TD] Performing pre-load precache")
+	PrecacheUnitByNameSync("creep_wave_1", context)
+	PrecacheUnitByNameSync("creep_wave_2", context)
+	PrecacheUnitByNameSync("creep_wave_3", context)
+	PrecacheUnitByNameSync("creep_wave_4", context)
+	PrecacheUnitByNameSync("creep_wave_5", context)
+	PrecacheUnitByNameSync("creep_wave_6", context)
+	PrecacheUnitByNameSync("creep_wave_7", context)
+	PrecacheUnitByNameSync("creep_wave_8", context)
+	PrecacheUnitByNameSync("creep_wave_9", context)
+	PrecacheUnitByNameSync("creep_wave_10", context)
 
 	--[[
 	-- Particles can be precached individually or by folder

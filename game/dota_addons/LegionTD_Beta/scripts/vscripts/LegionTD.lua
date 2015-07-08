@@ -583,6 +583,7 @@ tSummonedTower = {}
 tSummonedTowerPos = {}
 
 
+
 function UpdatePreGame()
 	-- Handle radiant spawn tSpawnPositions
 	iRadiantHeroCount = PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_GOODGUYS)
@@ -613,6 +614,7 @@ function Update()
 			bWaveStarted = true
 		end)
 	elseif IsRoundOver() == true and bWaveStarted == true then
+		iWaveNumber = iWaveNumber + 1
 		bWaveStarted = false
 		bWaveEnded = true
 		bCalledSpawn = false 
@@ -623,11 +625,15 @@ end
 function SpawnCreeps(waveNumber)
 	print('[SC] Spawn Them Creeps')
     local units_to_spawn = 10;
+    local waypoint = Entities:FindByName(nil,"spawn11"):GetAbsOrigin()
 
     for i = 1, units_to_spawn do
     	for _,v in pairs (tSpawnPosition) do
 	    	Timers:CreateTimer(function()
 	    		local unit = CreateUnitByName("creep_wave_" .. waveNumber, v, true, nil, nil, DOTA_TEAM_NEUTRALS)
+	    		ExecuteOrderFromTable({UnitIndex = unit:GetEntityIndex(),
+	    								OrderType = DOTA_UNIT_ORDER_MOVE_TO_POSITION,
+	    								Position = waypoint,Queue= true})
 	    		table.insert(tEnemiesRemaining, unit)
     		end)
 	    end
