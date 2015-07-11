@@ -136,6 +136,7 @@ function Precache( context )
 	-- Custom units from npc_units_custom.txt can also have all of their abilities and precache{} blocks precached in this way
 	PrecacheUnitByNameSync("npc_dota_hero_ancient_apparition", context)
 	PrecacheUnitByNameSync("npc_dota_hero_enigma", context)
+	PrecacheUnitByNameSync("npc_dota_hero_antimage", context)
 	PrecacheUnitByNameSync("npc_dota_hero_drow_ranger", context)
 	PrecacheUnitByNameSync("npc_dota_hero_tinker", context)
 	PrecacheUnitByNameSync("npc_dota_hero_jakiro", context)

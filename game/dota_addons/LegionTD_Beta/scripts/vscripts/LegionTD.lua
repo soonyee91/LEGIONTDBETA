@@ -581,6 +581,8 @@ vPoolPos = 0
 tSummonedTower = {}
 -- Summoned Tower Position
 tSummonedTowerPos = {}
+-- Tower Summonings
+tHeroesSummoned = {}
 
 
 
@@ -632,7 +634,7 @@ function SpawnCreeps(waveNumber)
 	    	Timers:CreateTimer(function()
 	    		local unit = CreateUnitByName("creep_wave_" .. waveNumber, v, true, nil, nil, DOTA_TEAM_NEUTRALS)
 	    		ExecuteOrderFromTable({UnitIndex = unit:GetEntityIndex(),
-	    								OrderType = DOTA_UNIT_ORDER_MOVE_TO_POSITION,
+	    								OrderType = DOTA_UNIT_ORDER_ATTACK_MOVE,
 	    								Position = waypoint,Queue= true})
 	    		table.insert(tEnemiesRemaining, unit)
     		end)
@@ -647,6 +649,8 @@ end
 function ConvertToHeros()
 	for _,v in pairs (tSummonedTower) do
 		-- TODO: Call first skill to change to unit
+		local unit = CreateUnitByName("npc_dota_hero_antimage", v:GetAbsOrigin(), true, nil, nil, DOTA_TEAM_GOODGUYS)
+		table.insert(tHeroesSummoned, unit)
 		v:SetAbsOrigin(vPoolPos)
 	end
 end
@@ -655,4 +659,11 @@ function RespawnBuildings()
 	for k,v in pairs (tSummonedTowerPos) do
 		k:SetAbsOrigin(v)
 	end
+
+	for k,v in pairs (tHeroesSummoned) do
+		v:Destroy()
+		tHeroesSummoned[k] = nil
+	end
+
+	print('Heroes in table: ' .. #tHeroesSummoned)
 end
